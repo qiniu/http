@@ -5,37 +5,29 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 	"syscall"
-
-	"qiniupkg.com/x/errors.v7"
-	"qiniupkg.com/x/log.v7"
 )
 
 // ---------------------------------------------------------------------------
 // type ErrorInfo
 
+// ErrorInfo represents a rpc error.
 type ErrorInfo struct {
 	Err   string `json:"error,omitempty"`
-	Key   string `json:"key,omitempty"`
 	Errno int    `json:"errno,omitempty"`
 	Code  int    `json:"code"`
 }
 
+// NewError creates a rpc error.
 func NewError(code int, err string) *ErrorInfo {
 
 	return &ErrorInfo{Code: code, Err: err}
 }
 
-func NewRpcError(code, errno int, key, err string) *ErrorInfo {
+// NewErrorEx creates a rpc error.
+func NewErrorEx(code, errno int, err string) *ErrorInfo {
 
-	return &ErrorInfo{Code: code, Errno: errno, Key: key, Err: err}
-}
-
-func (r *ErrorInfo) ErrorDetail() string {
-
-	msg, _ := json.Marshal(r)
-	return string(msg)
+	return &ErrorInfo{Code: code, Errno: errno, Err: err}
 }
 
 func (r *ErrorInfo) Error() string {
@@ -49,60 +41,49 @@ func (r *ErrorInfo) Error() string {
 	return "E" + strconv.Itoa(r.Code)
 }
 
-func (e *ErrorInfo) RpcError() (code, errno int, key, err string) {
-
-	return e.Code, e.Errno, e.Key, e.Error()
-}
-
-func (r *ErrorInfo) HttpCode() int {
+// StatusCode gets http status code.
+func (r *ErrorInfo) StatusCode() int {
 
 	return r.Code
 }
 
 // ---------------------------------------------------------------------------
 
-type httpCoder interface {
-	HttpCode() int
-}
-
 type nestedObjectGetter interface {
 	NestedObject() interface{}
 }
 
-func DetectCode(err error) int {
+// GetErrorInfo returns http status code and an error message.
+func GetErrorInfo(err error) (code, errno int, errmsg string) {
 
-	if e, ok := err.(httpCoder); ok {
-		return e.HttpCode()
+	if e, ok := err.(*ErrorInfo); ok {
+		return e.Code, e.Errno, e.Error()
 	}
 	if getter, ok := err.(nestedObjectGetter); ok {
-		if e, ok := getter.NestedObject().(httpCoder); ok {
-			return e.HttpCode()
+		if e, ok := getter.NestedObject().(*ErrorInfo); ok {
+			return e.Code, e.Errno, e.Error()
 		}
 	}
 	switch err {
 	case syscall.EINVAL:
-		return 400
+		return 400, 0, "invalid arguments"
 	case syscall.ENOENT: // no such entry
-		return 612
+		return 404, 0, "entry not found"
 	case syscall.EEXIST: // entry exists
-		return 614
+		return 409, 0, "entry already exists"
 	}
-	return 599
+	return 500, 0, err.Error()
 }
 
 // ---------------------------------------------------------------------------
 
-type rpcError interface {
-	RpcError() (code, errno int, key, err string)
-}
-
 type errorRet struct {
 	Err   string `json:"error"`
-	Key   string `json:"key,omitempty"`
 	Errno int    `json:"errno,omitempty"`
 }
 
-func replyErr(skip int, w http.ResponseWriter, err error) {
+// Error replies an error as a http response.
+func Error(w http.ResponseWriter, err error) {
 
 	if err == nil {
 		h := w.Header()
@@ -113,55 +94,20 @@ func replyErr(skip int, w http.ResponseWriter, err error) {
 		return
 	}
 
-	var code int
-	var ret errorRet
-
-	if e, ok := err.(rpcError); ok {
-		code, ret.Errno, ret.Key, ret.Err = e.RpcError()
-	} else if getter, ok := err.(nestedObjectGetter); ok {
-		if e2, ok := getter.NestedObject().(rpcError); ok {
-			code, ret.Errno, ret.Key, ret.Err = e2.RpcError()
-		}
-	}
-
-	if code == 0 {
-		switch err {
-		case syscall.EINVAL:
-			code, ret.Err = 400, "invalid argument"
-		case syscall.ENOENT:
-			code, ret.Err = 612, "no such entry"
-		case syscall.EEXIST:
-			code, ret.Err = 614, "entry exists"
-		default:
-			code, ret.Err = 599, err.Error()
-		}
-	}
-
-	detail := errors.Detail(err)
-	logWithReqid(skip+1, w.Header().Get("X-Reqid"), detail)
-
-	Reply(w, code, &ret)
+	code, errno, errmsg := GetErrorInfo(err)
+	Reply(w, code, &errorRet{Err: errmsg, Errno: errno})
 }
 
-func logWithReqid(lvl int, reqid string, str string) {
-
-	str = strings.Replace(str, "\n", "\n["+reqid+"]", -1)
-	log.Std.Output(reqid, log.Lwarn, lvl+1, str)
-}
-
-func Error(w http.ResponseWriter, err error) {
-
-	replyErr(2, w, err)
-}
-
+// ReplyErr replies an error as a http response.
 func ReplyErr(w http.ResponseWriter, code int, err string) {
 
-	replyErr(2, w, NewError(code, err))
+	Reply(w, code, &errorRet{Err: err})
 }
 
 // ---------------------------------------------------------------------------
 // func Reply
 
+// Reply replies a http response.
 func Reply(w http.ResponseWriter, code int, data interface{}) {
 
 	msg, err := json.Marshal(data)
@@ -177,6 +123,7 @@ func Reply(w http.ResponseWriter, code int, data interface{}) {
 	w.Write(msg)
 }
 
+// ReplyWith replies a http response.
 func ReplyWith(w http.ResponseWriter, code int, bodyType string, msg []byte) {
 
 	h := w.Header()
@@ -186,6 +133,7 @@ func ReplyWith(w http.ResponseWriter, code int, bodyType string, msg []byte) {
 	w.Write(msg)
 }
 
+// ReplyWithStream replies a http response.
 func ReplyWithStream(w http.ResponseWriter, code int, bodyType string, body io.Reader, bytes int64) {
 
 	h := w.Header()
@@ -195,6 +143,7 @@ func ReplyWithStream(w http.ResponseWriter, code int, bodyType string, body io.R
 	io.Copy(w, body) // don't use io.CopyN: if you need, call io.LimitReader(body, bytes) by yourself
 }
 
+// ReplyWithCode replies a http response.
 func ReplyWithCode(w http.ResponseWriter, code int) {
 
 	if code < 400 {
@@ -215,4 +164,3 @@ func ReplyWithCode(w http.ResponseWriter, code int) {
 var emptyObj = []byte{'{', '}'}
 
 // ---------------------------------------------------------------------------
-
