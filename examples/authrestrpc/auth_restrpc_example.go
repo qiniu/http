@@ -1,6 +1,8 @@
 package authrestrpc
 
 import (
+	"strconv"
+
 	"github.com/qiniu/http/examples/auth/authstub"
 	"github.com/qiniu/http/httputil"
 )
@@ -10,6 +12,7 @@ type fooInfo struct {
 	A   string `json:"a"'`
 	B   string `json:"b"`
 	Id  string `json:"id"`
+	Uid uint32 `json:"uid"`
 }
 
 // ---------------------------------------------------------------------------
@@ -49,12 +52,13 @@ JSON {id: <FooId>}
 */
 func (p *Service) PostFoo_Bar(args *fooBarArgs, env *authstub.Env) (ret fooBarRet, err error) {
 
-	id := args.A + "." + args.B
+	id := strconv.Itoa(int(env.Uid)) + "." + args.A + "." + args.B
 	p.foos[id] = fooInfo{
 		Foo: args.CmdArgs[0],
 		A:   args.A,
 		B:   args.B,
 		Id:  id,
+		Uid: env.Uid,
 	}
 	return fooBarRet{Id: id}, nil
 }
@@ -73,7 +77,7 @@ JSON {a: <A>, b: <B>, foo: <Foo>, id: <FooId>}
 func (p *Service) GetFoo_(args *reqArgs, env *authstub.Env) (ret fooInfo, err error) {
 
 	id := args.CmdArgs[0]
-	if foo, ok := p.foos[id]; ok {
+	if foo, ok := p.foos[id]; ok && foo.Uid == env.Uid {
 		return foo, nil
 	}
 	err = httputil.NewError(404, "id not found")

@@ -37,7 +37,8 @@ func TestServer(t *testing.T) {
 	ctx.Exec(
 		`
 	host foo.com 192.168.0.10:9898
-	auth testuser |authstub -uid 1 -utype 4|
+	auth testuser1 |authstub -uid 1 -utype 4|
+	auth testuser2 |authstub -uid 2 -utype 4|
 
 	#this is a comment
 	#
@@ -47,18 +48,25 @@ func TestServer(t *testing.T) {
 	json '{"error":"bad token"}'
 
 	post http://foo.com/v1/foo/foo123/bar
-	auth testuser
+	auth testuser1
 	json '{"a": "1", "b": "2"}'
 	ret 200
 	json '{"id": $(id)}'
 
 	get http://foo.com/v1/foo/$(id)
-	auth testuser
+	auth testuser2
+	ret 404
+	json '{
+		"error": "id not found"
+	}'
+
+	get http://foo.com/v1/foo/$(id)
+	auth testuser1
 	ret 200
 	json '{"id": $(id), "foo": "foo123", "a": "1", "b": "2"}'
 
 	get http://foo.com/v1/foo/1.3
-	auth testuser
+	auth testuser1
 	ret 404
 	json '{
 		"error": "id not found"
@@ -67,7 +75,7 @@ func TestServer(t *testing.T) {
 	match $(abcd) 4578
 	println \n|base64 $(abcd)|
 	post http://foo.com/v1/foo/|base64 $(abcd)|/bar
-	auth testuser
+	auth testuser1
 	form a=$(id)&b=3
 	ret 200
 	json '{
@@ -75,7 +83,7 @@ func TestServer(t *testing.T) {
 	}'
 
 	post http://foo.com/v1/hosts/192.168.3.1
-	auth testuser
+	auth testuser1
 	json '{
 		"foo.com": "127.0.0.1",
 		"bar.com": "192.168.4.10"
@@ -91,7 +99,7 @@ func TestServer(t *testing.T) {
 	}'
 
 	get http://foo.com/v1/foo/$(id2)
-	auth testuser
+	auth testuser1
 	ret 200
 	json '{"foo": $(foo), "a": $(id), "b": "3"}'
 
