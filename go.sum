@@ -6,7 +6,11 @@ github.com/qiniu/log v0.0.0-20140728010919-a304a74568d6 h1:pMot4yzjv8CtGQiGhRvVh
 github.com/qiniu/log v0.0.0-20140728010919-a304a74568d6/go.mod h1:WSWulkCEBvfLKNNmweUmJjQGNaYzdHqpTRITXdUNQiQ=
 github.com/qiniu/mockhttp.v2 v0.0.0-20141220151834-d192e3eabdfa h1:/wuHDt5GdIQ3IUtVYojAA86pc75mPbZK2/uoIVjRC+U=
 github.com/qiniu/mockhttp.v2 v0.0.0-20141220151834-d192e3eabdfa/go.mod h1:Roks7zFL+Rxaj4BxDFXfZ0UFr81UzAOGqXer3IXztWA=
+github.com/qiniu/qiniutest v1.0.0 h1:Rj7zabSdTcUcLPI50ge87MtD7+GYlEoDzYfJdMwq32U=
+github.com/qiniu/qiniutest v1.0.0/go.mod h1:/CufYQ3D0gnsJ6ng0BrQ9l2islrezMx5ERKjSRZHMeU=
 github.com/qiniu/x v8.0.0+incompatible h1:5KRlM4br8QjRrvQq8iZpu8V86tyP2ociSqbSVvAGz7E=
 github.com/qiniu/x v8.0.0+incompatible/go.mod h1:KpRKWYG/GaidPQVpoQ2Cvuvtts3gYnoo2PftgdmAiU4=
 gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22 h1:VpOs+IwYnYBaFnrNAeB8UUWtL3vEUnzSCL1nVjPhqrw=
 gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22/go.mod h1:yeKp02qBN3iKW1OzL3MGk2IdtZzaj7SFntXj72NppTA=
+qiniupkg.com/x v8.0.0+incompatible h1:SbuenQ7F/TwR1CQ1YwU9PlIltg55UNtnVw1mtEwsPPU=
+qiniupkg.com/x v8.0.0+incompatible/go.mod h1:6sLxR5IZ03vMaRAQAY/5MvzofeoBIjO4XE0Njv6V1ms=
