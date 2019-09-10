@@ -214,10 +214,10 @@ var newHandler = rpcutil.HandlerCreator{SelParseReq: selParseReq}.New
 
 // Factory is a HandlerFactory.
 var Factory = hfac.HandlerFactory{
-	{"Post", newHandler},
-	{"Put", newHandler},
-	{"Delete", newHandler},
-	{"Get", newHandler},
+	{Prefix: "Post", Creator: newHandler},
+	{Prefix: "Put", Creator: newHandler},
+	{Prefix: "Delete", Creator: newHandler},
+	{Prefix: "Get", Creator: newHandler},
 }
 
 // ---------------------------------------------------------------------------

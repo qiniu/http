@@ -121,7 +121,7 @@ func prefixOf(name string) (prefix string, ok bool) {
 
 // Factory is a HandlerFactory.
 var Factory = HandlerFactory{
-	{"Do", NewHandler},
+	{Prefix: "Do", Creator: NewHandler},
 }
 
 // ---------------------------------------------------------------------------

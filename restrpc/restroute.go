@@ -11,12 +11,14 @@ import (
 
 // ---------------------------------------------------------------------------
 
+// Mux is interface of ServeMux.
 type Mux interface {
 	Handle(pattern string, handler http.Handler)
 	ServeHTTP(w http.ResponseWriter, req *http.Request)
 	SetDefault(handler http.Handler)
 }
 
+// Router represents a router of url handlers.
 type Router struct {
 	Factory       hfac.HandlerFactory
 	PatternPrefix string
@@ -25,11 +27,15 @@ type Router struct {
 	Default       http.Handler
 }
 
+// ListenAndServe listens on the TCP network address addr and then calls Serve
+// with handler to handle requests on incoming connections. Accepted
+// connections are configured to enable TCP keep-alives.
 func (r *Router) ListenAndServe(addr string, rcvr interface{}) error {
 
 	return http.ListenAndServe(addr, r.Register(rcvr))
 }
 
+// Register registers route to the Mux instance of Router.
 func (r *Router) Register(rcvr interface{}, routes ...[][2]string) Mux {
 
 	if r.Mux == nil {
