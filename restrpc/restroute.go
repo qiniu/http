@@ -30,7 +30,7 @@ func (r *Router) ListenAndServe(addr string, rcvr interface{}) error {
 	return http.ListenAndServe(addr, r.Register(rcvr))
 }
 
-func (r *Router) Register(rcvr interface{}) Mux {
+func (r *Router) Register(rcvr interface{}, routes ...[][2]string) Mux {
 
 	if r.Mux == nil {
 		r.Mux = NewServeMux()
@@ -38,43 +38,62 @@ func (r *Router) Register(rcvr interface{}) Mux {
 	if r.Default != nil {
 		r.Mux.SetDefault(r.Default)
 	}
-
 	mux := r.Mux
+
 	factory := r.Factory
-	sep := r.Separator
-
-	patternPrefix := r.PatternPrefix
-	if strings.HasPrefix(patternPrefix, "/") {
-		patternPrefix = patternPrefix[1:]
-	}
-
 	if factory == nil {
 		factory = Factory
-	}
-	if sep == "" {
-		sep = "_"
 	}
 
 	typ := reflect.TypeOf(rcvr)
 	rcvr1 := reflect.ValueOf(rcvr)
 
-	// Install the methods
-	for m := 0; m < typ.NumMethod(); m++ {
-		method := typ.Method(m)
-		prefix, handler, err := factory.Create(rcvr1, method)
-		if err != nil {
-			continue
+	if len(routes) == 0 {
+		patternPrefix := r.PatternPrefix
+		if strings.HasPrefix(patternPrefix, "/") {
+			patternPrefix = patternPrefix[1:]
 		}
-		pattern := []string{prefix}
-		if patternPrefix != "" {
-			pattern = append(pattern, patternPrefix)
+		sep := r.Separator
+		if sep == "" {
+			sep = "_"
 		}
-		pattern = append(pattern, patternOf(method.Name[len(prefix):], sep)...)
-
-		mux.Handle(strings.Join(pattern, "/"), handler)
-		log.Println("Install", pattern, "=>", method.Name)
+		// Install the methods
+		for m := 0; m < typ.NumMethod(); m++ {
+			method := typ.Method(m)
+			prefix, handler, err := factory.Create(rcvr1, method)
+			if err != nil {
+				continue
+			}
+			pattern := []string{prefix}
+			if patternPrefix != "" {
+				pattern = append(pattern, patternPrefix)
+			}
+			pattern = append(pattern, patternOf(method.Name[len(prefix):], sep)...)
+	
+			mux.Handle(strings.Join(pattern, "/"), handler)
+			log.Println("Install", pattern, "=>", method.Name)
+		}
+	} else {
+		for _, item := range routes[0] {
+			pattern := item[0]
+			if r.PatternPrefix != "" {
+				pos := strings.Index(pattern, "/")
+				if pos > 0 {
+					pattern = pattern[:pos] + r.PatternPrefix + pattern[pos:]
+				}
+			}
+			method, ok := typ.MethodByName(item[1])
+			if !ok {
+				log.Fatalln("Install", pattern, "=>", item[1], "failed: method not found!")
+			}
+			_, handler, err := factory.Create(rcvr1, method)
+			if err != nil {
+				log.Fatalln("Install", pattern, "=>", item[1], "failed:", err)
+			}
+			mux.Handle(pattern, handler)
+			log.Println("Install", pattern, "=>", item[1])
+		}
 	}
-
 	return mux
 }
 
