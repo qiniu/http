@@ -51,7 +51,7 @@ func (p *Service) PostFoo_Bar(args *fooBarArgs, env *restrpc.Env) (ret fooBarRet
 
 	id := args.A + "." + args.B
 	p.foos[id] = fooInfo{
-		Foo: env.CmdArgs[0],
+		Foo: env.Args[0],
 		A:   args.A,
 		B:   args.B,
 		ID:  id,
@@ -69,7 +69,7 @@ GetFoo_ protocol:
 */
 func (p *Service) GetFoo_(env *restrpc.Env) (ret fooInfo, err error) {
 
-	id := env.CmdArgs[0]
+	id := env.Args[0]
 	if foo, ok := p.foos[id]; ok {
 		return foo, nil
 	}
@@ -97,7 +97,7 @@ PostHosts_ protocol:
 */
 func (p *Service) PostHosts_(args *postHostsArgs, env *restrpc.Env) (ret postHostsRet, err error) {
 
-	return postHostsRet{env.CmdArgs, args.ReqBody}, nil
+	return postHostsRet{env.Args, args.ReqBody}, nil
 }
 
 // ---------------------------------------------------------------------------

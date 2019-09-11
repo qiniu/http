@@ -18,16 +18,16 @@ import (
 
 // Env represents env of a http handler.
 type Env struct {
-	W       http.ResponseWriter
-	Req     *http.Request
-	CmdArgs []string
+	W    http.ResponseWriter
+	Req  *http.Request
+	Args []string
 }
 
 // OpenEnv init the Env instance.
 func (p *Env) OpenEnv(rcvr interface{}, w *http.ResponseWriter, req *http.Request) error {
 	p.W = *w
 	p.Req = req
-	p.CmdArgs = req.Header["*"]
+	p.Args = req.Header["*"]
 	return nil
 }
 

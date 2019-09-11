@@ -54,7 +54,7 @@ func (p *Service) PostFoo_Bar(args *fooBarArgs, env *authstub.Env) (ret fooBarRe
 
 	id := strconv.Itoa(int(env.Uid)) + "." + args.A + "." + args.B
 	p.foos[id] = fooInfo{
-		Foo: env.CmdArgs[0],
+		Foo: env.Args[0],
 		A:   args.A,
 		B:   args.B,
 		ID:  id,
@@ -73,7 +73,7 @@ GetFoo_ protocol:
 */
 func (p *Service) GetFoo_(env *authstub.Env) (ret fooInfo, err error) {
 
-	id := env.CmdArgs[0]
+	id := env.Args[0]
 	if foo, ok := p.foos[id]; ok && foo.Uid == env.Uid {
 		return foo, nil
 	}
@@ -101,7 +101,7 @@ PostHosts_ protocol:
 */
 func (p *Service) PostHosts_(args *postHostsArgs, env *authstub.Env) (ret postHostsRet, err error) {
 
-	return postHostsRet{env.CmdArgs, args.ReqBody}, nil
+	return postHostsRet{env.Args, args.ReqBody}, nil
 }
 
 // ---------------------------------------------------------------------------
