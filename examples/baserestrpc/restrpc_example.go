@@ -2,7 +2,7 @@ package baserestrpc
 
 import (
 	"github.com/qiniu/http/httputil"
-	"github.com/qiniu/http/rpcutil"
+	"github.com/qiniu/http/restrpc"
 )
 
 type fooInfo struct {
@@ -32,9 +32,8 @@ func New(cfg *Config) (p *Service, err error) {
 // ---------------------------------------------------------------------------
 
 type fooBarArgs struct {
-	CmdArgs []string
-	A       string `json:"a"'`
-	B       string `json:"b"`
+	A string `json:"a"`
+	B string `json:"b"`
 }
 
 type fooBarRet struct {
@@ -42,16 +41,17 @@ type fooBarRet struct {
 }
 
 /*
-POST /foo/<FooArg>/bar
-JSON {a: <A>, b: <B>}
- RET 200
-JSON {id: <FooId>}
+PostFoo_Bar protocol:
+	POST /foo/<FooArg>/bar
+	JSON {a: <A>, b: <B>}
+	RET 200
+	JSON {id: <FooId>}
 */
-func (p *Service) PostFoo_Bar(args *fooBarArgs, env *rpcutil.Env) (ret fooBarRet, err error) {
+func (p *Service) PostFoo_Bar(args *fooBarArgs, env *restrpc.Env) (ret fooBarRet, err error) {
 
 	id := args.A + "." + args.B
 	p.foos[id] = fooInfo{
-		Foo: args.CmdArgs[0],
+		Foo: env.CmdArgs[0],
 		A:   args.A,
 		B:   args.B,
 		ID:  id,
@@ -61,18 +61,15 @@ func (p *Service) PostFoo_Bar(args *fooBarArgs, env *rpcutil.Env) (ret fooBarRet
 
 // ---------------------------------------------------------------------------
 
-type reqArgs struct {
-	CmdArgs []string
-}
-
 /*
- GET /foo/<FooId>
- RET 200
-JSON {a: <A>, b: <B>, foo: <Foo>, id: <FooId>}
+GetFoo_ protocol:
+	GET /foo/<FooId>
+	RET 200
+	JSON {a: <A>, b: <B>, foo: <Foo>, id: <FooId>}
 */
-func (p *Service) GetFoo_(args *reqArgs, env *rpcutil.Env) (ret fooInfo, err error) {
+func (p *Service) GetFoo_(env *restrpc.Env) (ret fooInfo, err error) {
 
-	id := args.CmdArgs[0]
+	id := env.CmdArgs[0]
 	if foo, ok := p.foos[id]; ok {
 		return foo, nil
 	}
@@ -83,19 +80,24 @@ func (p *Service) GetFoo_(args *reqArgs, env *rpcutil.Env) (ret fooInfo, err err
 // ---------------------------------------------------------------------------
 
 type postHostsArgs struct {
+	ReqBody map[string]interface{}
+}
+
+type postHostsRet struct {
 	CmdArgs []string
 	ReqBody map[string]interface{}
 }
 
 /*
-POST /hosts/<IP>
-JSON {<Domain1>: <IP1>, ...}
- RET 200
-JSON {"CmdArgs": [<IP>], "ReqBody": {<Domain1>: <IP1>, ...}}
+PostHosts_ protocol:
+	POST /hosts/<IP>
+	JSON {<Domain1>: <IP1>, ...}
+	RET 200
+	JSON {"CmdArgs": [<IP>], "ReqBody": {<Domain1>: <IP1>, ...}}
 */
-func (p *Service) PostHosts_(args *postHostsArgs, env *rpcutil.Env) (ret *postHostsArgs, err error) {
+func (p *Service) PostHosts_(args *postHostsArgs, env *restrpc.Env) (ret postHostsRet, err error) {
 
-	return args, nil
+	return postHostsRet{env.CmdArgs, args.ReqBody}, nil
 }
 
 // ---------------------------------------------------------------------------

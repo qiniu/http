@@ -28,17 +28,6 @@ var typeOfRespW = reflect.TypeOf(unusedRespW).Elem()
 var typeOfReq = reflect.TypeOf(unusedReq)
 var typeOfContext = reflect.TypeOf(unusedContext).Elem()
 
-func isEnv(t reflect.Type) bool {
-	return t.NumField() == 2 &&
-		t.Field(0).Type == typeOfRespW &&
-		t.Field(1).Type == typeOfReq
-}
-
-func setEnv(v reflect.Value, w http.ResponseWriter, req *http.Request) {
-	v.Field(0).Set(reflect.ValueOf(w))
-	v.Field(1).Set(reflect.ValueOf(req))
-}
-
 // ---------------------------------------------------------------------------
 
 type itfEnv interface {
@@ -95,7 +84,7 @@ type handler struct {
 	envType   reflect.Type
 	parseReq  func(v reflect.Value, req *http.Request) error
 	repl      *Replier
-	hasEnv    int16 // 0: no env  1: Env  2: IEnv  3: deprecated Env  0x83: deprecated *Env
+	hasEnv    int16 // 0: no env  1: Env  2: IEnv
 	hasRet    int8  // -1: no ret  0: (err error)  1: (ret RRRR, err error)
 	hasCtx    int8  // 0: no Context 1: has Context
 	reqNotPtr int16
@@ -143,14 +132,6 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		defer env1.CloseEnv()
-		args = append(args, env)
-	case 3:
-		env := reflect.New(h.envType).Elem()
-		setEnv(env, w, req)
-		args = append(args, env)
-	case 0x83:
-		env := reflect.New(h.envType)
-		setEnv(env.Elem(), w, req)
 		args = append(args, env)
 	}
 
@@ -243,23 +224,12 @@ func (p HandlerCreator) New(rcvr reflect.Value, method reflect.Method) (http.Han
 			if lastArg == typeOfEnv {
 				hasEnv = 1
 				narg--
-			} else if isEnv(lastArg) { // deprecated Env
-				envType = lastArg
-				hasEnv = 3
-				narg--
 			}
 		} else if lastArg.Kind() == reflect.Ptr {
 			if lastArg.Implements(typeOfIEnv) {
 				envType = lastArg.Elem()
 				hasEnv = 2
 				narg--
-			} else {
-				lastArg = lastArg.Elem()
-				if isEnv(lastArg) { // deprecated *Env
-					envType = lastArg
-					hasEnv = 0x83
-					narg--
-				}
 			}
 		}
 	}

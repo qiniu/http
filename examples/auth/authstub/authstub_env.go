@@ -3,14 +3,14 @@ package authstub
 import (
 	"net/http"
 
+	"github.com/qiniu/http/restrpc"
 	. "github.com/qiniu/http/examples/auth/proto"
 )
 
 // ---------------------------------------------------------------------------
 
 type Env struct {
-	W   http.ResponseWriter
-	Req *http.Request
+	restrpc.Env
 	UserInfo
 }
 
@@ -22,8 +22,7 @@ func (p *Env) OpenEnv(rcvr interface{}, w *http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	p.W = *w
-	p.Req = req
+	p.Env.OpenEnv(rcvr, w, req)
 	p.UserInfo = user.UserInfo
 	return nil
 }

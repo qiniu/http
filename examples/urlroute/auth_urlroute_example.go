@@ -41,9 +41,8 @@ var Route = [][2]string{
 // ---------------------------------------------------------------------------
 
 type fooBarArgs struct {
-	CmdArgs []string
-	A       string `json:"a"'`
-	B       string `json:"b"`
+	A string `json:"a"`
+	B string `json:"b"`
 }
 
 type fooBarRet struct {
@@ -61,7 +60,7 @@ func (p *Service) PostFooBar(args *fooBarArgs, env *authstub.Env) (ret fooBarRet
 
 	id := strconv.Itoa(int(env.Uid)) + "." + args.A + "." + args.B
 	p.foos[id] = fooInfo{
-		Foo: args.CmdArgs[0],
+		Foo: env.CmdArgs[0],
 		A:   args.A,
 		B:   args.B,
 		ID:  id,
@@ -72,19 +71,15 @@ func (p *Service) PostFooBar(args *fooBarArgs, env *authstub.Env) (ret fooBarRet
 
 // ---------------------------------------------------------------------------
 
-type reqArgs struct {
-	CmdArgs []string
-}
-
 /*
 GetFoo protocol:
 	GET /foo/<FooId>
 	RET 200
 	JSON {a: <A>, b: <B>, foo: <Foo>, id: <FooId>}
 */
-func (p *Service) GetFoo(args *reqArgs, env *authstub.Env) (ret fooInfo, err error) {
+func (p *Service) GetFoo(env *authstub.Env) (ret fooInfo, err error) {
 
-	id := args.CmdArgs[0]
+	id := env.CmdArgs[0]
 	if foo, ok := p.foos[id]; ok && foo.Uid == env.Uid {
 		return foo, nil
 	}
@@ -95,6 +90,10 @@ func (p *Service) GetFoo(args *reqArgs, env *authstub.Env) (ret fooInfo, err err
 // ---------------------------------------------------------------------------
 
 type postHostsArgs struct {
+	ReqBody map[string]interface{}
+}
+
+type postHostsRet struct {
 	CmdArgs []string
 	ReqBody map[string]interface{}
 }
@@ -106,9 +105,9 @@ PostHosts protocol:
 	RET 200
 	JSON {"CmdArgs": [<IP>], "ReqBody": {<Domain1>: <IP1>, ...}}
 */
-func (p *Service) PostHosts(args *postHostsArgs, env *authstub.Env) (ret *postHostsArgs, err error) {
+func (p *Service) PostHosts(args *postHostsArgs, env *authstub.Env) (ret postHostsRet, err error) {
 
-	return args, nil
+	return postHostsRet{env.CmdArgs, args.ReqBody}, nil
 }
 
 // ---------------------------------------------------------------------------

@@ -14,7 +14,7 @@ type testcase struct {
 	failed  bool
 }
 
-func matchAsNetHttp(pattern string, urlPath string) bool {
+func matchAsNetHTTP(pattern string, urlPath string) bool {
 
 	mux := http.NewServeMux()
 	mux.Handle(pattern, mux)
@@ -29,7 +29,7 @@ func matchAsNetHttp(pattern string, urlPath string) bool {
 func patternMatch(pattern Pattern, method, urlPath string) (args []string, ok bool) {
 
 	if pattern[0] == "" { // 用net/http的pattern方式
-		ok = matchAsNetHttp(pattern[1], urlPath)
+		ok = matchAsNetHTTP(pattern[1], urlPath)
 	} else {
 		parts := strings.Split(urlPath[1:], "/")
 		args, ok = pattern.Match(method, parts)

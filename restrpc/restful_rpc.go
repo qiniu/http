@@ -14,12 +14,25 @@ import (
 	"github.com/qiniu/http/rpcutil"
 )
 
-// Env represents env of a http handler.
-type Env = rpcutil.Env
+// ---------------------------------------------------------------------------
 
-// WithoutBody represents http request arguments without http body.
-type WithoutBody struct {
+// Env represents env of a http handler.
+type Env struct {
+	W       http.ResponseWriter
+	Req     *http.Request
 	CmdArgs []string
+}
+
+// OpenEnv init the Env instance.
+func (p *Env) OpenEnv(rcvr interface{}, w *http.ResponseWriter, req *http.Request) error {
+	p.W = *w
+	p.Req = req
+	p.CmdArgs = req.Header["*"]
+	return nil
+}
+
+// CloseEnv cleanup Env.
+func (p *Env) CloseEnv() {
 }
 
 /* ---------------------------------------------------------------------------
@@ -44,7 +57,6 @@ allow POST:
 这里以 PostFoo_Bar_ 为例:
 
 	type Args struct {
-		CmdArgs []string
 		FormParam1 string `json:"form_param1"`
 		FormParam2 string `json:"form_param2"`
 	}
@@ -63,7 +75,6 @@ allow POST:
 那么解析出来的 args 为：
 
 	args = &Args{
-		CmdArgs:    []string{"COMMAND1","COMMAND2"},
 		FormParam1: "FORM_PARAM1",
 		FormParam2: "FORM_PARAM2",
 	}
@@ -77,16 +88,6 @@ func isJSONCall(req *http.Request) bool {
 }
 
 func parseReqDefault(ret reflect.Value, req *http.Request) error {
-
-	if cmdArgs := req.Header["*"]; cmdArgs != nil {
-		v := ret.Elem().FieldByName("CmdArgs")
-		if v.IsValid() {
-			v.Set(reflect.ValueOf(cmdArgs))
-			if ret.Elem().NumField() == 1 {
-				return nil
-			}
-		}
-	}
 
 	if isJSONCall(req) {
 		if req.ContentLength == 0 {
@@ -107,7 +108,6 @@ func parseReqDefault(ret reflect.Value, req *http.Request) error {
 在少数情况下，需用 ReqBody 来存储参数。样例：
 
 	type Args struct {
-		CmdArgs []string
 		ReqBody map[string]interface{}
 	}
 
@@ -128,7 +128,6 @@ func parseReqDefault(ret reflect.Value, req *http.Request) error {
 那么解析出来的 args 为：
 
 	args = &Args{
-		CmdArgs: []string{"COMMAND1","COMMAND2"},
 		ReqBody: map[string]interface{}{
 			"domain1": "IP1",
 			"domain2": "IP2",
@@ -139,16 +138,8 @@ func parseReqDefault(ret reflect.Value, req *http.Request) error {
 
 func parseReqWithBody(ret reflect.Value, req *http.Request) error {
 
-	retElem := ret.Elem()
-	if cmdArgs := req.Header["*"]; cmdArgs != nil {
-		v := retElem.FieldByName("CmdArgs")
-		if v.IsValid() {
-			v.Set(reflect.ValueOf(cmdArgs))
-		}
-	}
-
 	if isJSONCall(req) {
-		ret = retElem.FieldByName("ReqBody").Addr()
+		ret = ret.Elem().FieldByName("ReqBody").Addr()
 		if req.ContentLength == 0 {
 			return nil
 		}
@@ -159,32 +150,17 @@ func parseReqWithBody(ret reflect.Value, req *http.Request) error {
 
 func parseReqWithReader(ret reflect.Value, req *http.Request) error {
 
-	retElem := ret.Elem()
-	if cmdArgs := req.Header["*"]; cmdArgs != nil {
-		v := retElem.FieldByName("CmdArgs")
-		if v.IsValid() {
-			v.Set(reflect.ValueOf(cmdArgs))
-		}
-	}
-	retElem.FieldByName("ReqBody").Set(reflect.ValueOf(req.Body))
+	ret.Elem().FieldByName("ReqBody").Set(reflect.ValueOf(req.Body))
 	return nil
 }
 
 func parseReqWithBytes(ret reflect.Value, req *http.Request) error {
 
-	retElem := ret.Elem()
-	if cmdArgs := req.Header["*"]; cmdArgs != nil {
-		v := retElem.FieldByName("CmdArgs")
-		if v.IsValid() {
-			v.Set(reflect.ValueOf(cmdArgs))
-		}
-	}
-
 	b, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		return err
 	}
-	retElem.FieldByName("ReqBody").Set(reflect.ValueOf(b))
+	ret.Elem().FieldByName("ReqBody").Set(reflect.ValueOf(b))
 	return nil
 }
 
