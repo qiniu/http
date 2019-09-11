@@ -17,6 +17,11 @@ import (
 // Env represents env of a http handler.
 type Env = rpcutil.Env
 
+// WithoutBody represents http request arguments without http body.
+type WithoutBody struct {
+	CmdArgs []string
+}
+
 /* ---------------------------------------------------------------------------
 
 1. 参数规格
