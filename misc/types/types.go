@@ -37,9 +37,9 @@ const (
 	Struct
 	UnsafePointer
 
-	Ints     = Int | Int8 | Int16 | Int32 | Int64
-	Uints    = Uint | Uint8 | Uint16 | Uint32 | Uint64 | Uintptr
-	Floats   = Float32 | Float64
+	Ints      = Int | Int8 | Int16 | Int32 | Int64
+	Uints     = Uint | Uint8 | Uint16 | Uint32 | Uint64 | Uintptr
+	Floats    = Float32 | Float64
 	Complexes = Complex64 | Complex128
 )
 
