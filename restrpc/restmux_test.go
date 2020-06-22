@@ -1,9 +1,9 @@
 package restrpc
 
 import (
+	"net/http"
 	"strings"
 	"testing"
-	"net/http"
 )
 
 type testcase struct {
@@ -18,7 +18,7 @@ func matchAsNetHTTP(pattern string, urlPath string) bool {
 
 	mux := http.NewServeMux()
 	mux.Handle(pattern, mux)
-	req, err := http.NewRequest("GET", "http://foo.com" + urlPath, nil)
+	req, err := http.NewRequest("GET", "http://foo.com"+urlPath, nil)
 	if err != nil {
 		return false
 	}

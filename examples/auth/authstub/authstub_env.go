@@ -3,8 +3,8 @@ package authstub
 import (
 	"net/http"
 
-	"github.com/qiniu/http/restrpc"
 	. "github.com/qiniu/http/examples/auth/proto"
+	"github.com/qiniu/http/restrpc"
 )
 
 // ---------------------------------------------------------------------------

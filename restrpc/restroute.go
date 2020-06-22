@@ -75,7 +75,7 @@ func (r *Router) Register(rcvr interface{}, routes ...[][2]string) Mux {
 				pattern = append(pattern, patternPrefix)
 			}
 			pattern = append(pattern, patternOf(method.Name[len(prefix):], sep)...)
-	
+
 			mux.Handle(strings.Join(pattern, "/"), handler)
 			log.Println("Install", pattern, "=>", method.Name)
 		}
