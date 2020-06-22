@@ -57,7 +57,7 @@ func NewHandler(rcvr reflect.Value, method reflect.Method) (http.Handler, error)
 
 	// Second arg must be *http.Request
 	if reqType := mtype.In(2); reqType != typeOfHttpRequest {
-		log.Println("method", method.Name, "second arguement type not *http.Request:", reqType)
+		log.Println("method", method.Name, "second argument type not *http.Request:", reqType)
 		return nil, syscall.EINVAL
 	}
 
