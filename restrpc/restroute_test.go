@@ -155,7 +155,7 @@ func TestJsonRouteWithOnlyCmdArgs(t *testing.T) {
 		req.AddCookie(cookie)
 	}
 	resp, err = http.DefaultClient.Do(req)
-	cookies = checkResp(t, resp, err, `{"ReqBody":[{"a":1}]}`)
+	checkResp(t, resp, err, `{"ReqBody":[{"a":1}]}`)
 }
 
 func checkResp(t *testing.T, resp *http.Response, err error, respText string) (cookies []*http.Cookie) {
