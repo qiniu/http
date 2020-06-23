@@ -1,10 +1,5 @@
-github.com/qiniu/dyn v1.2.1 h1:esNFleqsU1eAPbmlcz1Mrf9CEGl6Sp5InPmlWXXRNJc=
-github.com/qiniu/dyn v1.2.1/go.mod h1:d8WAi20PjvSQOaR7tpyUHIruDvFr3nTC9Fxji2Wr3Ek=
-github.com/qiniu/httptest v1.0.2 h1:2Q6S9fLMOyaEsHlD+6SQH4i+FBfu/3szbxDuV5nWIM8=
-github.com/qiniu/httptest v1.0.2/go.mod h1:nEXbEljRdL7eR2DQnwxA+UZq6aw7PKtwKV9vN3CvDRc=
-github.com/qiniu/qiniutest v1.0.2 h1:vQ5MNgnc327Yh3phJzaf2xgtp0fMadYVzp4YQytXWDY=
-github.com/qiniu/qiniutest v1.0.2/go.mod h1:VHGJUbzChVy5d5mECDvbR0TC+BPSSLWqsD50HWZiF5c=
-github.com/qiniu/x v1.10.1 h1:Pv5aPTb7eqSm2wzOpVCD6SDgaK1qr7eeYLzcnQtO+3A=
-github.com/qiniu/x v1.10.1/go.mod h1:BeQOcur1vCtXTTv1Fo4WtJypt4cEh4/kuVY6GOAPxLs=
-gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22 h1:VpOs+IwYnYBaFnrNAeB8UUWtL3vEUnzSCL1nVjPhqrw=
+github.com/qiniu/dyn v1.3.0/go.mod h1:E8oERcm8TtwJiZvkQPbcAh0RL8jO1G0VXJMW3FAWdkk=
+github.com/qiniu/httptest v1.0.3/go.mod h1:NIKzeQ6KD+VyIs27nDQgWdvBbNVr0Xosx8B3anCMxRQ=
+github.com/qiniu/qiniutest v1.0.3/go.mod h1:OQzpgH0LVZDFa/+e4eN7JOWoRzbE9wqUNVZbivL5+Cs=
+github.com/qiniu/x v1.10.5/go.mod h1:03Ni9tj+N2h2aKnAz+6N0Xfl8FwMEDRC2PAlxekASDs=
 gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22/go.mod h1:yeKp02qBN3iKW1OzL3MGk2IdtZzaj7SFntXj72NppTA=
